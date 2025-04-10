@@ -7,7 +7,7 @@
 
 A hybrid deep learning framework for automated diabetic retinopathy detection with uncertainty quantification and explainability.
 
-![Diabetic Retinopathy System](C:\Users\romil\projects\diabetic_retinoplasty\assets\research_summary_dashboard.png)
+![Diabetic Retinopathy System](assets\research_summary_dashboard.png)
 
 ## 📋 Table of Contents
 
@@ -46,7 +46,7 @@ This project implements a hybrid deep learning approach that:
 
 ## 🏗️ Model Architecture
 
-![Architecture](C:\Users\romil\projects\diabetic_retinoplasty\assets\hybrid_model_architecture.png)
+![Architecture](assets\hybrid_model_architecture.png)
 
 Our hybrid architecture combines:
 - **EfficientNetB0**: Pre-trained CNN for efficient feature extraction
@@ -70,8 +70,8 @@ The model is trained and evaluated on the [APTOS 2019 Diabetic Retinopathy Detec
 
 ```bash
 # Clone the repository
-git clone https://github.com/Romilagarwal/diabetic-retinopathy-detection.git
-cd diabetic-retinopathy-detection
+git clone https://github.com/romilagarwal/diabetic_retinoplasty.git
+cd diabetic_retinopathy
 
 # Create and activate virtual environment
 python -m venv env
@@ -80,9 +80,12 @@ source env/bin/activate
 
 # Install dependencies from requirements
 pip install -r [requirements.txt]
+```
 Additionally, Graphviz must be installed on your system for model visualization.
 
-🚀 Usage
+
+## 🚀 Usage
+
 1. Data Preprocessing
 ```bash
 python pre_process_with_dataset_download.py
@@ -153,11 +156,12 @@ python generate_all_visualizations.py
 ```
 Creates comprehensive visualizations for research papers or presentations.
 
-📈 Results
+## 📈 Results
 Performance Metrics
-Model	        No DR	Mild	Moderate	Severe	Proliferative	Average
-EfficientNet	0.76	0.70	0.72	0.65	0.63	0.69
-Hybrid Model	0.82	0.75	0.79	0.73	0.71	0.76
+|Model        | No DR  | Mild	| Moderate | Severe | Proliferative | Average |
+|-------------|--------|--------|----------|--------|---------------|---------|
+|EfficientNet | 0.76   | 0.70	|  0.72	   |  0.65	|     0.63	    |   0.69  |
+|Hybrid Model |	0.82   | 0.75	|  0.79	   |  0.73	|     0.71	    |   0.76  |
 
 Key Improvements
 · +7% Average F1 Score improvement over baseline EfficientNet
@@ -165,16 +169,17 @@ Key Improvements
 · Enhanced Performance on minority classes (Severe and Proliferative)
 · Reduced Uncertainty in predictions compared to baseline
 
-Visualizations
+## 👁️ Visualizations
 
-Grad-CAM Explainability
-<img alt="Grad-CAM" src="C:\Users\romil\projects\diabetic_retinoplasty\assets\explainability_summary.png">
+<h3>Grad-CAM Explainability</h3>
+<img alt="Grad-CAM" src="assets\explainability_summary.png">
 
-Uncertainty Analysis
+<h3>Uncertainty Analysis</h3>
 
-<img alt="Uncertainty" src="C:\Users\romil\projects\diabetic_retinoplasty\assets\uncertainty_processed.png">
+<img alt="Uncertainty" src="assets\uncertainty_processed.png">
 
-🔮 Future Work
+
+## 🔮 Future Work
 
 1. DR-GAN++: Implementation of Generative Adversarial Networks for synthetic data generation to further address class imbalance
 2. Ensemble Methods: Combining multiple models for improved performance
@@ -182,7 +187,8 @@ Uncertainty Analysis
 4. Mobile Deployment: Optimization for edge devices to enable screening in remote areas
 Multimodal Learning: Integrating patient metadata with retinal images
 
-📚 References
+
+## 📚 References
 
 1. Huang, G., Liu, Z., Van Der Maaten, L., & Weinberger, K. Q. (2017). Densely connected convolutional networks. Proceedings of the IEEE conference on computer vision and pattern recognition, 4700-4708.
 
@@ -194,5 +200,6 @@ Multimodal Learning: Integrating patient metadata with retinal images
 
 5. Lin, T. Y., Goyal, P., Girshick, R., He, K., & Dollár, P. (2017). Focal loss for dense object detection. Proceedings of the IEEE international conference on computer vision, 2980-2988.
 
-👥 Contributing
+
+## 👥 Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
