@@ -21,7 +21,6 @@ A hybrid deep learning framework for automated diabetic retinopathy detection wi
 - [Future Work](#-future-work)
 - [References](#-references)
 - [Contributing](#-contributing)
-- [License](#-license)
 
 ## 🔍 Overview
 
