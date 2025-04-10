@@ -45,7 +45,7 @@ This project implements a hybrid deep learning approach that:
 
 ## 🏗️ Model Architecture
 
-![Architecture](assets\hybrid_model_architecture.png)
+![Architecture](assets/hybrid_model_architecture.png)
 
 Our hybrid architecture combines:
 - **EfficientNetB0**: Pre-trained CNN for efficient feature extraction
