@@ -7,7 +7,7 @@
 
 A hybrid deep learning framework for automated diabetic retinopathy detection with uncertainty quantification and explainability.
 
-![Diabetic Retinopathy System](https://raw.githubusercontent.com/Romilagarwa/C:\Users\romil\projects\diabetic_retinoplasty\assets\research_summary_dashboard.png)
+![Diabetic Retinopathy System](C:\Users\romil\projects\diabetic_retinoplasty\assets\research_summary_dashboard.png)
 
 ## 📋 Table of Contents
 
