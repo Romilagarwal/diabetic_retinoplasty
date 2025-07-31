@@ -4,8 +4,10 @@ from tensorflow.keras import layers, Model, Input
 import numpy as np
 import os
 import math
+from dotenv import load_dotenv
+load_dotenv()
+
 class PatchEmbed(layers.Layer):
-    """Image to Patch Embedding"""
     def __init__(self, patch_size=4, embed_dim=96, norm_layer=None):
         super().__init__()
         self.patch_size = patch_size
@@ -19,14 +21,8 @@ class PatchEmbed(layers.Layer):
         if self.norm:
             x = self.norm(x)
         return x
+
 def window_partition(x, window_size):
-    """
-    Args:
-        x: (B, H, W, C)
-        window_size: window size (int or tuple)
-    Returns:
-        windows: (num_windows*B, window_size, window_size, C)
-    """
     B, H, W, C = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2], tf.shape(x)[3]
     if isinstance(window_size, int):
         window_h = window_w = window_size
@@ -36,17 +32,8 @@ def window_partition(x, window_size):
     x = tf.transpose(x, [0, 1, 3, 2, 4, 5])
     windows = tf.reshape(x, [-1, window_h, window_w, C])
     return windows
+
 def window_reverse(windows, window_size, H, W, C):
-    """
-    Args:
-        windows: (num_windows*B, window_size, window_size, C)
-        window_size: window size (int or tuple)
-        H: Height of image
-        W: Width of image
-        C: Channels
-    Returns:
-        x: (B, H, W, C)
-    """
     if isinstance(window_size, int):
         window_h = window_w = window_size
     else:
@@ -56,8 +43,8 @@ def window_reverse(windows, window_size, H, W, C):
     x = tf.transpose(x, [0, 1, 3, 2, 4, 5])
     x = tf.reshape(x, [B, H, W, C])
     return x
+
 class WindowAttention(layers.Layer):
-    """Window based multi-head self-attention module with relative position bias"""
     def __init__(self, dim, window_size, num_heads, qkv_bias=True, dropout_rate=0.0, name=None):
         super().__init__(name=name)
         self.dim = dim
@@ -92,6 +79,7 @@ class WindowAttention(layers.Layer):
             initial_value=tf.cast(relative_coords, tf.int32),
             trainable=False,
             name='relative_position_index')
+
     def call(self, x, mask=None, training=None):
         B_, N, C = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2]
         qkv = self.qkv(x)
@@ -126,8 +114,8 @@ class WindowAttention(layers.Layer):
         x = self.proj(x)
         x = self.proj_drop(x, training=training)
         return x
+
 class MLP(layers.Layer):
-    """MLP module with dropout"""
     def __init__(self, hidden_features=None, out_features=None, dropout_rate=0., name=None):
         super().__init__(name=name)
         self.hidden_features = hidden_features
@@ -136,6 +124,7 @@ class MLP(layers.Layer):
         self.act = layers.Activation('gelu')
         self.fc2 = layers.Dense(out_features if out_features is not None else hidden_features, name='fc2')
         self.drop = layers.Dropout(dropout_rate)
+
     def call(self, x, training=None):
         original_dims = tf.shape(x)
         original_shape = x.shape
@@ -150,8 +139,8 @@ class MLP(layers.Layer):
         if len(original_shape) == 4:
             x = tf.reshape(x, [B, H, W, -1])
         return x
+
 class SwinTransformerBlock(layers.Layer):
-    """Swin Transformer Block"""
     def __init__(self, dim, num_heads, window_size=7, shift_size=0,
                  mlp_ratio=4., qkv_bias=True, dropout_rate=0.,
                  attention_dropout_rate=0., trainable=True, dtype=None, name=None):
@@ -161,13 +150,11 @@ class SwinTransformerBlock(layers.Layer):
         self.window_size = window_size
         self.shift_size = shift_size
         self.mlp_ratio = mlp_ratio
-        
-        # The rest of your implementation remains the same
         if isinstance(window_size, int):
             self.window_size_h = self.window_size_w = window_size
         else:
             self.window_size_h, self.window_size_w = window_size
-            
+
         self.norm1 = layers.LayerNormalization(epsilon=1e-5, name='norm1')
         self.attn = WindowAttention(
             dim, window_size=window_size, num_heads=num_heads,
@@ -179,8 +166,6 @@ class SwinTransformerBlock(layers.Layer):
             dropout_rate=dropout_rate,
             name='mlp'
         )
-        
-        # Determine shift size based on window size
         if isinstance(window_size, int):
             min_size = window_size
         else:
@@ -189,6 +174,7 @@ class SwinTransformerBlock(layers.Layer):
             self.shift_size = min_size // 2
         else:
             self.shift_size = 0
+
     def build(self, input_shape):
         if self.shift_size > 0:
             H, W = input_shape[1], input_shape[2]
@@ -227,6 +213,7 @@ class SwinTransformerBlock(layers.Layer):
         else:
             self.attn_mask = None
         super().build(input_shape)
+
     def call(self, x, training=None):
         H, W, C = tf.shape(x)[1], tf.shape(x)[2], tf.shape(x)[3]
         B = tf.shape(x)[0]
@@ -264,13 +251,14 @@ class SwinTransformerBlock(layers.Layer):
         x = shortcut + x
         x = x + self.mlp(self.norm2(x), training=training)
         return x
+
 class PatchMerging(layers.Layer):
-    """Patch Merging Layer - downsamples by 2x"""
     def __init__(self, dim, norm_layer=layers.LayerNormalization, name=None):
         super().__init__(name=name)
         self.dim = dim
         self.reduction = layers.Dense(2 * dim, use_bias=False, name='reduction')
         self.norm = norm_layer(epsilon=1e-5, name='norm')
+
     def call(self, x):
         B, H, W, C = tf.shape(x)[0], tf.shape(x)[1], tf.shape(x)[2], tf.shape(x)[3]
         assert H % 2 == 0 and W % 2 == 0, f"H and W ({H}, {W}) are not even."
@@ -282,8 +270,8 @@ class PatchMerging(layers.Layer):
         x = self.norm(x)
         x = self.reduction(x)
         return x
+
 class BasicLayer(layers.Layer):
-    """A basic Swin Transformer layer for one stage"""
     def __init__(self, dim, depth, num_heads, window_size,
                  mlp_ratio=4., qkv_bias=True, dropout_rate=0.,
                  attention_dropout_rate=0., drop_path_rate=0.,
@@ -305,6 +293,7 @@ class BasicLayer(layers.Layer):
             self.downsample = downsample(dim=dim, name='downsample')
         else:
             self.downsample = None
+
     def call(self, x, training=None):
         for block in self.blocks:
             if self.use_checkpoint:
@@ -314,8 +303,8 @@ class BasicLayer(layers.Layer):
         if self.downsample is not None:
             x = self.downsample(x)
         return x
+
 class SwinTransformer(Model):
-    """Swin Transformer Model - Lightweight version for diabetic retinopathy"""
     def __init__(self, img_size=224, patch_size=4, in_chans=3, num_classes=5,
                  embed_dim=96, depths=[2, 2, 6, 2], num_heads=[3, 6, 12, 24],
                  window_size=7, mlp_ratio=4., qkv_bias=True,
@@ -352,6 +341,7 @@ class SwinTransformer(Model):
             self.layers.append(layer)
         self.norm = norm_layer(epsilon=1e-5, name='norm')
         self.head = layers.Dense(num_classes, name='head')
+
     def call(self, x, training=None):
         x = self.patch_embed(x)
         for layer in self.layers:
@@ -360,8 +350,8 @@ class SwinTransformer(Model):
         x = tf.reduce_mean(x, axis=[1, 2])
         x = self.head(x)
         return x
+
 def create_swin_tiny_model(input_shape=(224, 224, 1), num_classes=5):
-    """Create a memory-efficient Swin-T model for diabetic retinopathy"""
     inputs = Input(shape=input_shape)
     x = tf.keras.layers.Concatenate()([inputs, inputs, inputs])
     model = SwinTransformer(
@@ -384,8 +374,8 @@ def create_swin_tiny_model(input_shape=(224, 224, 1), num_classes=5):
     )
     outputs = model(x)
     return Model(inputs=inputs, outputs=outputs)
+
 def create_hybrid_model(input_shape=(224, 224, 1), num_classes=5):
-    """Create a hybrid EfficientNet+Swin model"""
     from tensorflow.keras.applications import EfficientNetB0
     inputs = Input(shape=input_shape)
     x = tf.keras.layers.Concatenate()([inputs, inputs, inputs])
@@ -421,6 +411,7 @@ def create_hybrid_model(input_shape=(224, 224, 1), num_classes=5):
         metrics=['accuracy', tf.keras.metrics.AUC()]
     )
     return model
+
 if __name__ == "__main__":
     physical_devices = tf.config.list_physical_devices('GPU')
     if len(physical_devices) > 0:
@@ -440,7 +431,7 @@ if __name__ == "__main__":
     except:
         print("Could not generate model diagram. Install pydot and graphviz for visualization.")
     test_batch = np.random.random((2, 224, 224, 1))
-    with tf.device('/CPU:0'):  
+    with tf.device('/CPU:0'):
         outputs = model.predict(test_batch)
     print(f"Output shape: {outputs.shape}")
     print("Memory test successful!")
